@@ -1,0 +1,88 @@
+import java.util.*;
+
+class QuickFitAllocator {
+    private Map<Integer, List<String>> memoryLists;
+    private Map<String, String> allocated;
+
+    public QuickFitAllocator() {
+        memoryLists = new HashMap<>();
+        allocated = new HashMap<>();
+
+        // Initialize memory blocks
+        memoryLists.put(32, new ArrayList<>(Arrays.asList("Block 1", "Block 2")));
+        memoryLists.put(64, new ArrayList<>(Arrays.asList("Block 3", "Block 4")));
+        memoryLists.put(128, new ArrayList<>(Collections.singletonList("Block 5")));
+    }
+
+    public void allocate(String process, int size) {
+        if (memoryLists.containsKey(size) && !memoryLists.get(size).isEmpty()) {
+            String block = memoryLists.get(size).remove(0);
+            allocated.put(process, size + " KB (" + block + ")");
+            System.out.println(process + " allocated " + size + " KB (" + block + ").");
+        } else {
+            System.out.println("No exact match for " + process + " (" + size + " KB). Using fallback strategy...");
+            fallbackAllocation(process, size);
+        }
+    }
+
+    private void fallbackAllocation(String process, int size) {
+        String suitableBlock = null;
+        int suitableSize = 0;
+
+        for (Map.Entry<Integer, List<String>> entry : memoryLists.entrySet()) {
+            int blockSize = entry.getKey();
+            List<String> blocks = entry.getValue();
+            if (blockSize > size && !blocks.isEmpty()) {
+                suitableBlock = blocks.get(0);
+                suitableSize = blockSize;
+                break;
+            }
+        }
+
+        if (suitableBlock != null) {
+            memoryLists.get(suitableSize).remove(suitableBlock);
+            int leftoverSize = suitableSize - size;
+            if (leftoverSize > 0) {
+                memoryLists.putIfAbsent(leftoverSize, new ArrayList<>());
+                memoryLists.get(leftoverSize).add("Split from " + suitableBlock);
+            }
+
+            allocated.put(process, size + " KB (" + suitableBlock + ")");
+            System.out.println(process + " allocated " + size + " KB (" + suitableBlock + "). Leftover: " + leftoverSize + " KB.");
+        } else {
+            System.out.println("Allocation failed for " + process + " (" + size + " KB)." );
+        }
+    }
+
+    public void displayMemoryState() {
+        System.out.println("\nFinal Memory State:");
+        System.out.println("Allocated Blocks:");
+        for (Map.Entry<String, String> entry : allocated.entrySet()) {
+            System.out.println("  " + entry.getKey() + ": " + entry.getValue());
+        }
+
+        System.out.println("\nFree Blocks:");
+        for (Map.Entry<Integer, List<String>> entry : memoryLists.entrySet()) {
+            System.out.println("  " + entry.getKey() + " KB List: " + entry.getValue());
+        }
+    }
+
+    public static void main(String[] args) {
+        QuickFitAllocator allocator = new QuickFitAllocator();
+
+        // Processes to allocate
+        Map<String, Integer> processes = new LinkedHashMap<>();
+        processes.put("Process A", 32);
+        processes.put("Process B", 63);
+        processes.put("Process C", 128);
+        processes.put("Process D", 50);
+
+        // Allocation process
+        for (Map.Entry<String, Integer> entry : processes.entrySet()) {
+            allocator.allocate(entry.getKey(), entry.getValue());
+        }
+
+        // Display final memory state
+        allocator.displayMemoryState();
+    }
+}
