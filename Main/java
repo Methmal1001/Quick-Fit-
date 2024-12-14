@@ -1,6 +1,26 @@
 import java.util.*;
 
 class QuickFitAllocator {
+
+    public static void main(String[] args) {
+        QuickFitAllocator allocator = new QuickFitAllocator();
+
+        // Processes to allocate
+        Map<String, Integer> processes = new LinkedHashMap<>();
+        processes.put("Process A", 32);
+        processes.put("Process B", 63);
+        processes.put("Process C", 128);
+        processes.put("Process D", 50);
+
+        // Allocation process
+        for (Map.Entry<String, Integer> entry : processes.entrySet()) {
+            allocator.allocate(entry.getKey(), entry.getValue());
+        }
+
+        // Display final memory state
+        allocator.displayMemoryState();
+    }
+
     private Map<Integer, List<String>> memoryLists;
     private Map<String, String> allocated;
 
@@ -65,24 +85,5 @@ class QuickFitAllocator {
         for (Map.Entry<Integer, List<String>> entry : memoryLists.entrySet()) {
             System.out.println("  " + entry.getKey() + " KB List: " + entry.getValue());
         }
-    }
-
-    public static void main(String[] args) {
-        QuickFitAllocator allocator = new QuickFitAllocator();
-
-        // Processes to allocate
-        Map<String, Integer> processes = new LinkedHashMap<>();
-        processes.put("Process A", 32);
-        processes.put("Process B", 63);
-        processes.put("Process C", 128);
-        processes.put("Process D", 50);
-
-        // Allocation process
-        for (Map.Entry<String, Integer> entry : processes.entrySet()) {
-            allocator.allocate(entry.getKey(), entry.getValue());
-        }
-
-        // Display final memory state
-        allocator.displayMemoryState();
     }
 }
